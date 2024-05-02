@@ -1,6 +1,10 @@
 import { View, StyleSheet, Text, Button } from "react-native"
 import Slider from "@react-native-community/slider"
 import { useState } from "react"
+import dgram from 'react-native-udp'
+
+const socket = dgram.createSocket('udp4');
+socket.bind(8080);
 
 var baseDiameter = 50;
 
@@ -81,7 +85,13 @@ export default function CoordinatesScreen() {
                     onValueChange={(newValue) => setZ(newValue)}
                 />
                 {/* ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ */}
-            <Button style={{}} title='set position' onPress={() => {console.log('sent?')}} />
+            <Button 
+            style={{}} 
+            title='set position' 
+            onPress={() => {
+                console.log('sent?'); 
+                socket.send(valueX.toString()+","+valueY.toString()+","+valueZ.toString())
+            }} />
             </View>
         </View>
     )
