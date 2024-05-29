@@ -1,10 +1,8 @@
 import { DeviceMotion } from 'expo-sensors';
 import { View, StyleSheet, Text, Button, Touchable, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import dgram from 'react-native-udp'
 
-const socket = dgram.createSocket('udp4');
-socket.bind(8080);
+const ws = new WebSocket('ws://192.168.1.83:8080');
 
 var
   displacementX = 0,
@@ -45,7 +43,7 @@ const MainScreen = ({ navigation }) => {
   const [currentPosition, setCurrentPosition] = useState({ x: 0, y: 0, z: 0 });
   const [toggleButton, toggleText] = useState({ text: 'stop', color: 'red' })
 
-  DeviceMotion.setUpdateInterval(1);
+  DeviceMotion.setUpdateInterval(10);
 
   useEffect(() => {
     DeviceMotion.addListener(onDeviceMotionChange);
@@ -53,6 +51,15 @@ const MainScreen = ({ navigation }) => {
       DeviceMotion.removeAllListeners();
     };
   }, []);
+
+  useEffect(() => {
+    var s = (currentPosition.x.toString() + "," + currentPosition.y.toString() + "," + currentPosition.z.toString());
+    //console.log(s);
+    try {
+      ws.send(s);
+    } catch (e) { }
+  }
+  );
 
   const onDeviceMotionChange = (event) => {
     if (realMesurment) {
@@ -69,7 +76,6 @@ const MainScreen = ({ navigation }) => {
               z: currentPosition.z + displacementZ / samples
             })
         )
-        socket.send(currentPosition.x.toString() + "," + currentPosition.y.toString() + "," + currentPosition.z.toString());
         displacementX = 0;
         displacementY = 0;
         displacementZ = 0;
@@ -82,12 +88,11 @@ const MainScreen = ({ navigation }) => {
       setCurrentPosition(
         (currentPosition) => (
           {
-            x: currentPosition.x + Math.random()* 0.05 * (isNaN(mesurmentX) ? 0 : mesurmentX),
-            y: currentPosition.y + Math.random()* 0.05 * (isNaN(mesurmentY) ? 0 : mesurmentY),
-            z: currentPosition.z + Math.random()* 0.05 * (isNaN(mesurmentZ) ? 0 : mesurmentZ)
+            x: currentPosition.x + Math.random() * 0.05 * (isNaN(mesurmentX) ? 0 : mesurmentX),
+            y: currentPosition.y + Math.random() * 0.05 * (isNaN(mesurmentY) ? 0 : mesurmentY),
+            z: currentPosition.z + Math.random() * 0.05 * (isNaN(mesurmentZ) ? 0 : mesurmentZ)
           })
       )
-      socket.send(currentPosition.x.toString() + "," + currentPosition.y.toString() + "," + currentPosition.z.toString());
     }
   }
 

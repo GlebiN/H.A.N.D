@@ -1,12 +1,10 @@
 import { View, StyleSheet, Text, Button } from "react-native"
 import Slider from "@react-native-community/slider"
 import { useState } from "react"
-import dgram from 'react-native-udp'
 
-const socket = dgram.createSocket('udp4');
-socket.bind(8080);
+const ws = new WebSocket('ws://192.168.1.83:8080');
 
-var baseDiameter = 50;
+var ballDiameter = 50;
 
 export default function CoordinatesScreen() {
     const [valueX, setX] = useState(0);
@@ -17,20 +15,20 @@ export default function CoordinatesScreen() {
         <View style={styles.container}>
             <View style={{ flex: 10, alignItems: 'center' }}>
 
-                <View style={{flexDirection: 'row', height: '100%'}}>
+                <View style={{ flexDirection: 'row', height: '100%' }}>
 
-                    <View style={{ flex: valueX < 0 ? valueX + 1 : 1 }}/>
+                    <View style={{ flex: valueX < 0 ? valueX + 1 : 1 }} />
                     {/* left */}
 
-                    <View style={{flexDirection: 'column'}}>
+                    <View style={{ flexDirection: 'column' }}>
                         <View style={{ flex: valueY < 0 ? valueY + 1 : 1 }} />
                         {/* top */}
 
                         <View
                             style={{
-                                width: baseDiameter + valueZ * 20,
-                                height: baseDiameter + valueZ * 20,
-                                borderRadius: (baseDiameter + valueZ * 20) / 2,
+                                width: ballDiameter + valueZ * 20,
+                                height: ballDiameter + valueZ * 20,
+                                borderRadius: (ballDiameter + valueZ * 20) / 2,
                                 backgroundColor: 'red'
                             }}
                         >
@@ -39,7 +37,7 @@ export default function CoordinatesScreen() {
 
                         <View style={{ flex: valueY > 0 ? 1 - valueY : 1 }} />
                         {/* bottom */}
-                        
+
                     </View>
 
                     <View style={{ flex: valueX > 0 ? 1 - valueX : 1 }} />
@@ -85,13 +83,15 @@ export default function CoordinatesScreen() {
                     onValueChange={(newValue) => setZ(newValue)}
                 />
                 {/* ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ */}
-            <Button 
-            style={{}} 
-            title='set position' 
-            onPress={() => {
-                console.log('sent?'); 
-                socket.send(valueX.toString()+","+valueY.toString()+","+valueZ.toString())
-            }} />
+                <Button
+                    style={{}}
+                    title='set position'
+                    onPress={() => {
+                        console.log('sent?');
+                        var msg = (valueX.toString() + "," + valueY.toString() + "," + valueZ.toString())
+                        console.log(msg);
+                        ws.send(msg)
+                    }} />
             </View>
         </View>
     )
