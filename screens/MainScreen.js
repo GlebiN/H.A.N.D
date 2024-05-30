@@ -3,13 +3,22 @@ import { View, StyleSheet, Text, Button, Touchable, TouchableOpacity } from 'rea
 import React, { useState, useEffect } from 'react';
 
 const ws = new WebSocket('ws://192.168.1.83:8080');
-
+var mesurmentX = 0;
+var mesurmentY = 0;
+var mesurmentZ = 0;
 var
+  velocityX = 0,
+  velocityY = 0,
+  velocityZ = 0,
   displacementX = 0,
   displacementY = 0,
   displacementZ = 0,
+  mesurmentX = 0,
+  mesurmentY = 0,
+  mesurmentZ = 0,
   counter = 0,
-  samples = 25,
+  samples = 1,
+  intervals = 10,
   lowPass = 0.2,
   listening = true,
   toStop = false,
@@ -43,7 +52,7 @@ const MainScreen = ({ navigation }) => {
   const [currentPosition, setCurrentPosition] = useState({ x: 0, y: 0, z: 0 });
   const [toggleButton, toggleText] = useState({ text: 'stop', color: 'red' })
 
-  DeviceMotion.setUpdateInterval(10);
+  DeviceMotion.setUpdateInterval(intervals);
 
   useEffect(() => {
     DeviceMotion.addListener(onDeviceMotionChange);
@@ -54,22 +63,27 @@ const MainScreen = ({ navigation }) => {
 
   useEffect(() => {
     var s = (currentPosition.x.toString() + "," + currentPosition.y.toString() + "," + currentPosition.z.toString());
-    console.log(s);
+    // console.log(s);
     try {
       setTimeout(() => {
         ws.send(s);
       },
         500
       )
-    } catch (e) { console.log("not conneted")}
+    } catch (e) { console.log("not conneted") }
   }
   );
 
   const onDeviceMotionChange = (event) => {
     if (realMesurment) {
-      displacementX += lowPassFilter(event.acceleration.x);
-      displacementY += lowPassFilter(event.acceleration.y);
-      displacementZ += lowPassFilter(event.acceleration.z);
+      velocityX += lowPassFilter(event.acceleration.x) * (intervals / 1000);
+      velocityY += lowPassFilter(event.acceleration.y) * (intervals / 1000);
+      velocityZ += lowPassFilter(event.acceleration.z) * (intervals / 1000);
+
+      displacementX += velocityX * (intervals / 1000);
+      displacementY += velocityY * (intervals / 1000);
+      displacementZ += velocityZ * (intervals / 1000);
+
       counter++;
       if (counter >= samples) {
         setCurrentPosition(
@@ -86,17 +100,35 @@ const MainScreen = ({ navigation }) => {
         counter = 0;
       }
     } else {
-      var mesurmentX = lowPassFilter(event.acceleration.x) / Math.abs(lowPassFilter(event.acceleration.x));
-      var mesurmentY = lowPassFilter(event.acceleration.y) / Math.abs(lowPassFilter(event.acceleration.y));
-      var mesurmentZ = lowPassFilter(event.acceleration.z) / Math.abs(lowPassFilter(event.acceleration.z));
-      setCurrentPosition(
-        (currentPosition) => (
-          {
-            x: currentPosition.x + Math.random() * 0.05 * (isNaN(mesurmentX) ? 0 : mesurmentX),
-            y: currentPosition.y + Math.random() * 0.05 * (isNaN(mesurmentY) ? 0 : mesurmentY),
-            z: currentPosition.z + Math.random() * 0.05 * (isNaN(mesurmentZ) ? 0 : mesurmentZ)
-          })
-      )
+      mesurmentX += lowPassFilter(event.acceleration.x) < 0 ? -1 : lowPassFilter(event.acceleration.x) > 0 ? 1 : 0;
+      mesurmentY += lowPassFilter(event.acceleration.y) < 0 ? -1 : lowPassFilter(event.acceleration.y) > 0 ? 1 : 0;
+      mesurmentZ += lowPassFilter(event.acceleration.z) < 0 ? -1 : lowPassFilter(event.acceleration.z) > 0 ? 1 : 0;
+      console.log
+        (
+          "\tx: " + (mesurmentX) +
+          "\ty: " + (mesurmentY) +
+          "\tz: " + (mesurmentZ)
+        );
+
+      counter++;
+      if (counter >= samples) {
+        mesurmentX = mesurmentX / Math.abs(mesurmentX == 0 ? 1 : mesurmentX );
+        mesurmentY = mesurmentY / Math.abs(mesurmentY == 0 ? 1 : mesurmentY );
+        mesurmentZ = mesurmentZ / Math.abs(mesurmentZ == 0 ? 1 : mesurmentZ );
+        setCurrentPosition(
+          (currentPosition) => (
+            {
+              x: currentPosition.x + Math.random() * 0.05 * (mesurmentX),
+              y: currentPosition.y + Math.random() * 0.05 * (mesurmentY),
+              z: currentPosition.z + Math.random() * 0.05 * (mesurmentZ)
+            }
+          )
+        )
+        mesurmentX = 0;
+        mesurmentY = 0;
+        mesurmentZ = 0;
+        counter = 0;
+      }
     }
   }
 
