@@ -3,9 +3,6 @@ import { View, StyleSheet, Text, Button, Touchable, TouchableOpacity } from 'rea
 import React, { useState, useEffect } from 'react';
 
 const ws = new WebSocket('ws://192.168.1.83:8080');
-var mesurmentX = 0;
-var mesurmentY = 0;
-var mesurmentZ = 0;
 var
   velocityX = 0,
   velocityY = 0,
@@ -103,12 +100,12 @@ const MainScreen = ({ navigation }) => {
       mesurmentX += lowPassFilter(event.acceleration.x) < 0 ? -1 : lowPassFilter(event.acceleration.x) > 0 ? 1 : 0;
       mesurmentY += lowPassFilter(event.acceleration.y) < 0 ? -1 : lowPassFilter(event.acceleration.y) > 0 ? 1 : 0;
       mesurmentZ += lowPassFilter(event.acceleration.z) < 0 ? -1 : lowPassFilter(event.acceleration.z) > 0 ? 1 : 0;
-      console.log
-        (
-          "\tx: " + (mesurmentX) +
-          "\ty: " + (mesurmentY) +
-          "\tz: " + (mesurmentZ)
-        );
+      // console.log
+      //   (
+      //     "\tx: " + (mesurmentX) +
+      //     "\ty: " + (mesurmentY) +
+      //     "\tz: " + (mesurmentZ)
+      //   );
 
       counter++;
       if (counter >= samples) {
