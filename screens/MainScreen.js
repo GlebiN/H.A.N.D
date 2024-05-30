@@ -54,10 +54,14 @@ const MainScreen = ({ navigation }) => {
 
   useEffect(() => {
     var s = (currentPosition.x.toString() + "," + currentPosition.y.toString() + "," + currentPosition.z.toString());
-    //console.log(s);
+    console.log(s);
     try {
-      ws.send(s);
-    } catch (e) { }
+      setTimeout(() => {
+        ws.send(s);
+      },
+        500
+      )
+    } catch (e) { console.log("not conneted")}
   }
   );
 
