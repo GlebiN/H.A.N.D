@@ -2,7 +2,7 @@ import { View, StyleSheet, Text, Button } from "react-native"
 import Slider from "@react-native-community/slider"
 import { useState } from "react"
 
-const ws = new WebSocket('ws://192.168.1.83:8080');
+const ws = new WebSocket('ws://192.168.1.126:8080');
 
 var ballDiameter = 50;
 
